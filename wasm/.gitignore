@@ -1,0 +1,5 @@
+*.js
+*.wasm
+*.html
+
+!test_module.html

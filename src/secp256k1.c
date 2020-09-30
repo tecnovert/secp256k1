@@ -772,3 +772,8 @@ int secp256k1_ec_pubkey_combine(const secp256k1_context* ctx, secp256k1_pubkey *
 #ifdef ENABLE_MODULE_SCHNORRSIG
 # include "modules/schnorrsig/main_impl.h"
 #endif
+
+#ifdef ENABLE_MODULE_ED25519
+# include "modules/ed25519/core_ed25519.h"
+# include "modules/ed25519/scalarmult_ed25519_ref10.h"
+#endif

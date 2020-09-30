@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+</head>
+
+<script src="cryptolib.js"></script>
+<script>
+
+function bufferToHex(buffer) {
+    var s = '', h = '0123456789ABCDEF';
+    (new Uint8Array(buffer)).forEach((v) => { s += h[v >> 4] + h[v & 15]; });
+    return s;
+}
+
+CryptoModule().then(function(Module) {
+    console.log('module loaded');
+    instance = new Module.CryptoLib();
+    instance.initialise();
+
+    var k = new Uint8Array(32);
+    var i;
+    for (i = 0; i < k.length; i++) {
+        k[i] = 1;
+    }
+
+    var ptr = Module._malloc(32);
+
+    var dataHeap = new Uint8Array(Module.HEAPU8.buffer, ptr, 32);
+    dataHeap.set(new Uint8Array(k.buffer));
+
+    var ptr_out = Module._malloc(33);
+
+    var dataHeapOut = new Uint8Array(Module.HEAPU8.buffer, ptr_out, 33);
+    for (i = 0; i < dataHeapOut.length; i++) {
+        dataHeapOut[i] = 0;
+    }
+
+    var rv = instance.GetPubKey(dataHeapOut.byteOffset, dataHeap.byteOffset);
+    console.log(rv);
+    console.log(bufferToHex(dataHeapOut));
+
+    Module._free(ptr);
+    Module._free(ptr_out);
+
+
+    dataHeap[31] = 0;
+    dataHeapOut[32] = 0;
+    rv = instance.ed25519_scm_base(dataHeapOut.byteOffset, dataHeap.byteOffset);
+    console.log(rv);
+    console.log(bufferToHex(dataHeapOut));
+
+
+    instance.finalise();
+    instance.delete();
+    })
+</script>
+
+</script>
+</html>
