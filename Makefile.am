@@ -166,3 +166,11 @@ endif
 if ENABLE_MODULE_ED25519
 include src/modules/ed25519/Makefile.am.include
 endif
+
+if ENABLE_MODULE_GENERATOR
+include src/modules/generator/Makefile.am.include
+endif
+
+if ENABLE_MODULE_COMMITMENT
+include src/modules/commitment/Makefile.am.include
+endif

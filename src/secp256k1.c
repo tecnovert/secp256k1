@@ -22,6 +22,14 @@
 #include "scratch_impl.h"
 #include "selftest.h"
 
+#ifdef ENABLE_MODULE_GENERATOR
+# include "include/secp256k1_generator.h"
+#endif
+
+#ifdef ENABLE_MODULE_COMMITMENT
+# include "include/secp256k1_commitment.h"
+#endif
+
 #if defined(VALGRIND)
 # include <valgrind/memcheck.h>
 #endif
@@ -776,4 +784,12 @@ int secp256k1_ec_pubkey_combine(const secp256k1_context* ctx, secp256k1_pubkey *
 #ifdef ENABLE_MODULE_ED25519
 # include "modules/ed25519/core_ed25519.h"
 # include "modules/ed25519/scalarmult_ed25519_ref10.h"
+#endif
+
+#ifdef ENABLE_MODULE_GENERATOR
+# include "modules/generator/main_impl.h"
+#endif
+
+#ifdef ENABLE_MODULE_COMMITMENT
+# include "modules/commitment/main_impl.h"
 #endif

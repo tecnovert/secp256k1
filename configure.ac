@@ -151,6 +151,16 @@ AC_ARG_ENABLE(module_ed25519,
     [enable_module_ed25519=$enableval],
     [enable_module_ed25519=no])
 
+AC_ARG_ENABLE(module_generator,
+    AS_HELP_STRING([--enable-module-generator],[enable NUMS generator module (default is no)]),
+    [enable_module_generator=$enableval],
+    [enable_module_generator=no])
+
+AC_ARG_ENABLE(module_commitment,
+    AS_HELP_STRING([--enable-module-commitment],[enable Pedersen commitments module (default is no)]),
+    [enable_module_commitment=$enableval],
+    [enable_module_commitment=no])
+
 
 AC_ARG_ENABLE(external_default_callbacks,
     AS_HELP_STRING([--enable-external-default-callbacks],[enable external default callback functions [default=no]]),
@@ -317,6 +327,12 @@ else
   esac
 fi
 
+AC_MSG_CHECKING([for  __builtin_clzll])
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[void myfunc() { __builtin_clzll(1);}]])],
+    [ AC_MSG_RESULT([yes]);AC_DEFINE(HAVE_BUILTIN_CLZLL,1,[Define this symbol if  __builtin_clzll is available]) ],
+    [ AC_MSG_RESULT([no])
+    ])
+
 # select assembly optimization
 use_external_asm=no
 
@@ -460,6 +476,14 @@ if test x"$enable_module_ed25519" = x"yes"; then
   AC_DEFINE(ENABLE_MODULE_ED25519, 1, [Define this symbol to enable the ed25519 module])
 fi
 
+if test x"$enable_module_generator" = x"yes"; then
+  AC_DEFINE(ENABLE_MODULE_GENERATOR, 1, [Define this symbol to enable the NUMS generator module])
+fi
+
+if test x"$enable_module_commitment" = x"yes"; then
+  AC_DEFINE(ENABLE_MODULE_COMMITMENT, 1, [Define this symbol to enable the Pedersen commitment module])
+fi
+
 # Test if extrakeys is set after the schnorrsig module to allow the schnorrsig
 # module to set enable_module_extrakeys=yes
 if test x"$enable_module_extrakeys" = x"yes"; then
@@ -482,7 +506,14 @@ if test x"$enable_experimental" = x"yes"; then
   AC_MSG_NOTICE([Building extrakeys module: $enable_module_extrakeys])
   AC_MSG_NOTICE([Building schnorrsig module: $enable_module_schnorrsig])
   AC_MSG_NOTICE([Building ed25519 module: $enable_module_ed25519])
+  AC_MSG_NOTICE([Building Pedersen commitment module: $enable_module_generator])
+  AC_MSG_NOTICE([Building Pedersen commitment module: $enable_module_commitment])
   AC_MSG_NOTICE([******])
+  if test x"$enable_module_generator" != x"yes"; then
+    if test x"$enable_module_commitment" = x"yes"; then
+      AC_MSG_ERROR([Commitment module requires the generator module. Use --enable-module-generator to allow.])
+    fi
+  fi
 else
   if test x"$enable_module_ecdh" = x"yes"; then
     AC_MSG_ERROR([ECDH module is experimental. Use --enable-experimental to allow.])
@@ -495,6 +526,12 @@ else
   fi
   if test x"$enable_module_ed25519" = x"yes"; then
     AC_MSG_ERROR([ed25519 module is experimental. Use --enable-experimental to allow.])
+  fi
+  if test x"$enable_module_generator" = x"yes"; then
+    AC_MSG_ERROR([NUMS generator module is experimental. Use --enable-experimental to allow.])
+  fi
+  if test x"$enable_module_commitment" = x"yes"; then
+    AC_MSG_ERROR([Pedersen commitment module is experimental. Use --enable-experimental to allow.])
   fi
   if test x"$set_asm" = x"arm"; then
     AC_MSG_ERROR([ARM assembly optimization is experimental. Use --enable-experimental to allow.])
@@ -517,6 +554,8 @@ AM_CONDITIONAL([ENABLE_MODULE_RECOVERY], [test x"$enable_module_recovery" = x"ye
 AM_CONDITIONAL([ENABLE_MODULE_EXTRAKEYS], [test x"$enable_module_extrakeys" = x"yes"])
 AM_CONDITIONAL([ENABLE_MODULE_SCHNORRSIG], [test x"$enable_module_schnorrsig" = x"yes"])
 AM_CONDITIONAL([ENABLE_MODULE_ED25519], [test x"$enable_module_ed25519" = x"yes"])
+AM_CONDITIONAL([ENABLE_MODULE_GENERATOR], [test x"$enable_module_generator" = x"yes"])
+AM_CONDITIONAL([ENABLE_MODULE_COMMITMENT], [test x"$enable_module_commitment" = x"yes"])
 AM_CONDITIONAL([USE_EXTERNAL_ASM], [test x"$use_external_asm" = x"yes"])
 AM_CONDITIONAL([USE_ASM_ARM], [test x"$set_asm" = x"arm"])
 
@@ -539,6 +578,8 @@ echo "  module recovery         = $enable_module_recovery"
 echo "  module extrakeys        = $enable_module_extrakeys"
 echo "  module schnorrsig       = $enable_module_schnorrsig"
 echo "  module ed25519          = $enable_module_ed25519"
+echo "  module generator        = $enable_module_generator"
+echo "  module commitment       = $enable_module_commitment"
 echo
 echo "  asm                     = $set_asm"
 echo "  bignum                  = $set_bignum"

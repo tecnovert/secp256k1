@@ -5363,6 +5363,14 @@ void run_ecdsa_openssl(void) {
 # include "modules/ed25519/tests_impl.h"
 #endif
 
+#ifdef ENABLE_MODULE_GENERATOR
+# include "modules/generator/tests_impl.h"
+#endif
+
+#ifdef ENABLE_MODULE_COMMITMENT
+# include "modules/commitment/tests_impl.h"
+#endif
+
 void run_memczero_test(void) {
     unsigned char buf1[6] = {1, 2, 3, 4, 5, 6};
     unsigned char buf2[sizeof(buf1)];
@@ -5533,6 +5541,17 @@ void run_cmov_tests(void) {
     ge_storage_cmov_test();
 }
 
+void run_util_tests(void) {
+    CHECK(secp256k1_clz64_var(0) == 64);
+    CHECK(secp256k1_clz64_var(1) == 63);
+    CHECK(secp256k1_clz64_var(2) == 62);
+    CHECK(secp256k1_clz64_var(3) == 62);
+    CHECK(secp256k1_clz64_var(~0ULL) == 0);
+    CHECK(secp256k1_clz64_var((~0ULL) - 1) == 0);
+    CHECK(secp256k1_clz64_var((~0ULL) >> 1) == 1);
+    CHECK(secp256k1_clz64_var((~0ULL) >> 2) == 2);
+}
+
 int main(int argc, char **argv) {
     /* Disable buffering for stdout to improve reliability of getting
      * diagnostic information. Happens right at the start of main because
@@ -5646,7 +5665,17 @@ int main(int argc, char **argv) {
     run_ed25519_tests();
 #endif
 
+#ifdef ENABLE_MODULE_GENERATOR
+    run_generator_tests();
+#endif
+
+#ifdef ENABLE_MODULE_COMMITMENT
+    run_commitment_tests();
+#endif
+
     /* util tests */
+    run_util_tests();
+
     run_memczero_test();
 
     run_cmov_tests();
