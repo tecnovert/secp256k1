@@ -5,10 +5,7 @@
 #include <stdint.h>
 
 #include "include/secp256k1_ed25519.h"
-/*#include "crypto_core_ed25519.h"
-#include "private/common.h"*/
 #include "ref10/ed25519_ref10.h"
-/*#include "randombytes.h"*/
 #include "utils.h"
 
 int

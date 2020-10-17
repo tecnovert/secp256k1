@@ -26,10 +26,6 @@
 # include "include/secp256k1_generator.h"
 #endif
 
-#ifdef ENABLE_MODULE_COMMITMENT
-# include "include/secp256k1_commitment.h"
-#endif
-
 #if defined(VALGRIND)
 # include <valgrind/memcheck.h>
 #endif
@@ -765,6 +761,30 @@ int secp256k1_ec_pubkey_combine(const secp256k1_context* ctx, secp256k1_pubkey *
     return 1;
 }
 
+
+SECP256K1_INLINE static int secp256k1_decode_check_point(secp256k1_gej *P, const unsigned char *p) {
+    secp256k1_ge Q;
+    if (!secp256k1_eckey_pubkey_parse(&Q, p, 33) ||
+        secp256k1_ge_is_infinity(&Q)) {
+        return 0;
+    }
+    secp256k1_gej_set_ge(P, &Q);
+    return 1;
+}
+
+SECP256K1_INLINE static int secp256k1_gej_serialize(const secp256k1_context *ctx, unsigned char *out, secp256k1_gej *P) {
+    secp256k1_ge pt;
+    secp256k1_pubkey pk;
+    size_t point_ser_len = 33;
+
+    secp256k1_ge_set_gej(&pt, P);
+    secp256k1_pubkey_save(&pk, &pt);
+    if (!secp256k1_ec_pubkey_serialize(ctx, out, &point_ser_len, &pk, SECP256K1_EC_COMPRESSED)) {
+        return 0;
+    }
+    return 1;
+}
+
 #ifdef ENABLE_MODULE_ECDH
 # include "modules/ecdh/main_impl.h"
 #endif
@@ -784,12 +804,18 @@ int secp256k1_ec_pubkey_combine(const secp256k1_context* ctx, secp256k1_pubkey *
 #ifdef ENABLE_MODULE_ED25519
 # include "modules/ed25519/core_ed25519.h"
 # include "modules/ed25519/scalarmult_ed25519_ref10.h"
+# include "modules/ed25519/main_impl.h"
+# include "modules/ed25519/sha512/hash_sha512.h"
 #endif
 
 #ifdef ENABLE_MODULE_GENERATOR
 # include "modules/generator/main_impl.h"
 #endif
 
-#ifdef ENABLE_MODULE_COMMITMENT
-# include "modules/commitment/main_impl.h"
+#ifdef ENABLE_MODULE_DLEAG
+# include "modules/dleag/main_impl.h"
+#endif
+
+#ifdef ENABLE_MODULE_ECDSAOTVES
+# include "modules/ecdsaotves/main_impl.h"
 #endif

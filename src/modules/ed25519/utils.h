@@ -54,4 +54,20 @@ sodium_memzero(void * const pnt, const size_t len)
     }
 }
 
+int
+sodium_memcmp(const void *const b1_, const void *const b2_, size_t len)
+{
+    const volatile unsigned char *volatile b1 =
+        (const volatile unsigned char *volatile) b1_;
+    const volatile unsigned char *volatile b2 =
+        (const volatile unsigned char *volatile) b2_;
+    size_t                 i;
+    volatile unsigned char d = 0U;
+
+    for (i = 0U; i < len; i++) {
+        d |= b1[i] ^ b2[i];
+    }
+    return (1 & ((d - 1) >> 8)) - 1;
+}
+
 #endif

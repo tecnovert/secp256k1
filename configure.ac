@@ -156,10 +156,15 @@ AC_ARG_ENABLE(module_generator,
     [enable_module_generator=$enableval],
     [enable_module_generator=no])
 
-AC_ARG_ENABLE(module_commitment,
-    AS_HELP_STRING([--enable-module-commitment],[enable Pedersen commitments module (default is no)]),
-    [enable_module_commitment=$enableval],
-    [enable_module_commitment=no])
+AC_ARG_ENABLE(module_dleag,
+    AS_HELP_STRING([--enable-module-dleag],[enable DLEAG module (default is no)]),
+    [enable_module_dleag=$enableval],
+    [enable_module_dleag=no])
+
+AC_ARG_ENABLE(module_ecdsaotves,
+    AS_HELP_STRING([--enable-module-ecdsaotves],[enable ECDSA OT-VES module (default is no)]),
+    [enable_module_ecdsaotves=$enableval],
+    [enable_module_ecdsaotves=no])
 
 
 AC_ARG_ENABLE(external_default_callbacks,
@@ -480,8 +485,12 @@ if test x"$enable_module_generator" = x"yes"; then
   AC_DEFINE(ENABLE_MODULE_GENERATOR, 1, [Define this symbol to enable the NUMS generator module])
 fi
 
-if test x"$enable_module_commitment" = x"yes"; then
-  AC_DEFINE(ENABLE_MODULE_COMMITMENT, 1, [Define this symbol to enable the Pedersen commitment module])
+if test x"$enable_module_dleag" = x"yes"; then
+  AC_DEFINE(ENABLE_MODULE_DLEAG, 1, [Define this symbol to enable the DLEAG module])
+fi
+
+if test x"$enable_module_ecdsaotves" = x"yes"; then
+  AC_DEFINE(ENABLE_MODULE_ECDSAOTVES, 1, [Define this symbol to enable the ECDSA OT-VES module])
 fi
 
 # Test if extrakeys is set after the schnorrsig module to allow the schnorrsig
@@ -506,12 +515,23 @@ if test x"$enable_experimental" = x"yes"; then
   AC_MSG_NOTICE([Building extrakeys module: $enable_module_extrakeys])
   AC_MSG_NOTICE([Building schnorrsig module: $enable_module_schnorrsig])
   AC_MSG_NOTICE([Building ed25519 module: $enable_module_ed25519])
-  AC_MSG_NOTICE([Building Pedersen commitment module: $enable_module_generator])
-  AC_MSG_NOTICE([Building Pedersen commitment module: $enable_module_commitment])
+  AC_MSG_NOTICE([Building Generator module: $enable_module_generator])
+  AC_MSG_NOTICE([Building DLEAG module: $enable_module_dleag])
+  AC_MSG_NOTICE([Building ECDSA OT-VES module: $enable_module_ecdsaotves])
   AC_MSG_NOTICE([******])
   if test x"$enable_module_generator" != x"yes"; then
-    if test x"$enable_module_commitment" = x"yes"; then
-      AC_MSG_ERROR([Commitment module requires the generator module. Use --enable-module-generator to allow.])
+    if test x"$enable_module_dleag" = x"yes"; then
+      AC_MSG_ERROR([DLEAG module requires the generator module. Use --enable-module-generator to allow.])
+    fi
+  fi
+  if test x"$enable_module_ed25519" != x"yes"; then
+    if test x"$enable_module_dleag" = x"yes"; then
+      AC_MSG_ERROR([DLEAG module requires the ed25519 module. Use --enable-module-ed25519 to allow.])
+    fi
+  fi
+  if test x"$enable_module_recovery" != x"yes"; then
+    if test x"$enable_module_dleag" = x"yes"; then
+      AC_MSG_ERROR([DLEAG module requires the recovery module. Use --enable-module-recovery to allow.])
     fi
   fi
 else
@@ -530,8 +550,11 @@ else
   if test x"$enable_module_generator" = x"yes"; then
     AC_MSG_ERROR([NUMS generator module is experimental. Use --enable-experimental to allow.])
   fi
-  if test x"$enable_module_commitment" = x"yes"; then
-    AC_MSG_ERROR([Pedersen commitment module is experimental. Use --enable-experimental to allow.])
+  if test x"$enable_module_dleag" = x"yes"; then
+    AC_MSG_ERROR([DLEAG module is experimental. Use --enable-experimental to allow.])
+  fi
+  if test x"$enable_module_ecdsaotves" = x"yes"; then
+    AC_MSG_ERROR([ECDSA OT-VES module is experimental. Use --enable-experimental to allow.])
   fi
   if test x"$set_asm" = x"arm"; then
     AC_MSG_ERROR([ARM assembly optimization is experimental. Use --enable-experimental to allow.])
@@ -555,7 +578,8 @@ AM_CONDITIONAL([ENABLE_MODULE_EXTRAKEYS], [test x"$enable_module_extrakeys" = x"
 AM_CONDITIONAL([ENABLE_MODULE_SCHNORRSIG], [test x"$enable_module_schnorrsig" = x"yes"])
 AM_CONDITIONAL([ENABLE_MODULE_ED25519], [test x"$enable_module_ed25519" = x"yes"])
 AM_CONDITIONAL([ENABLE_MODULE_GENERATOR], [test x"$enable_module_generator" = x"yes"])
-AM_CONDITIONAL([ENABLE_MODULE_COMMITMENT], [test x"$enable_module_commitment" = x"yes"])
+AM_CONDITIONAL([ENABLE_MODULE_DLEAG], [test x"$enable_module_dleag" = x"yes"])
+AM_CONDITIONAL([ENABLE_MODULE_ECDSAOTVES], [test x"$enable_module_ecdsaotves" = x"yes"])
 AM_CONDITIONAL([USE_EXTERNAL_ASM], [test x"$use_external_asm" = x"yes"])
 AM_CONDITIONAL([USE_ASM_ARM], [test x"$set_asm" = x"arm"])
 
@@ -579,7 +603,8 @@ echo "  module extrakeys        = $enable_module_extrakeys"
 echo "  module schnorrsig       = $enable_module_schnorrsig"
 echo "  module ed25519          = $enable_module_ed25519"
 echo "  module generator        = $enable_module_generator"
-echo "  module commitment       = $enable_module_commitment"
+echo "  module dleag            = $enable_module_dleag"
+echo "  module ecdsaotves       = $enable_module_ecdsaotves"
 echo
 echo "  asm                     = $set_asm"
 echo "  bignum                  = $set_bignum"

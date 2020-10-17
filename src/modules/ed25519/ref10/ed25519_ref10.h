@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
+#include "../common.h"
 #include "../utils.h"
 
 /*
@@ -26,6 +26,7 @@ void fe25519_frombytes(fe25519 h, const unsigned char *s);
 void fe25519_tobytes(unsigned char *s, const fe25519 h);
 
 #ifdef HAVE_TI_MODE
+#error "TODO"
 # include "ed25519_ref10_fe_51.h"
 #else
 # include "ed25519_ref10_fe_25_5.h"

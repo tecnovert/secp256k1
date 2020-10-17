@@ -244,4 +244,27 @@ int secp256k1_generator_generate_blinded(const secp256k1_context* ctx, secp256k1
     return secp256k1_generator_generate_internal(ctx, gen, key32, blind32);
 }
 
+int secp256k1_svdw(
+    const secp256k1_context *ctx,
+    unsigned char *output,
+    const unsigned char *input) {
+    secp256k1_ge ge;
+    secp256k1_fe t;
+    size_t pk_len = 33;
+
+    VERIFY_CHECK(ctx != NULL);
+
+    if (!secp256k1_fe_set_b32(&t, input)) {
+        return 0;
+    }
+
+    shallue_van_de_woestijne(&ge, &t);
+
+    if (!secp256k1_eckey_pubkey_serialize(&ge, output, &pk_len, SECP256K1_EC_UNCOMPRESSED)) {
+        return 0;
+    }
+
+    return 1;
+}
+
 #endif

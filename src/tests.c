@@ -5367,8 +5367,12 @@ void run_ecdsa_openssl(void) {
 # include "modules/generator/tests_impl.h"
 #endif
 
-#ifdef ENABLE_MODULE_COMMITMENT
-# include "modules/commitment/tests_impl.h"
+#ifdef ENABLE_MODULE_DLEAG
+# include "modules/dleag/tests_impl.h"
+#endif
+
+#ifdef ENABLE_MODULE_ECDSAOTVES
+# include "modules/ecdsaotves/tests_impl.h"
 #endif
 
 void run_memczero_test(void) {
@@ -5669,8 +5673,12 @@ int main(int argc, char **argv) {
     run_generator_tests();
 #endif
 
-#ifdef ENABLE_MODULE_COMMITMENT
-    run_commitment_tests();
+#ifdef ENABLE_MODULE_DLEAG
+    run_dleag_tests();
+#endif
+
+#ifdef ENABLE_MODULE_ECDSAOTVES
+    run_ecdsaotves_tests();
 #endif
 
     /* util tests */

@@ -4,6 +4,7 @@
 
 #include <secp256k1.h>
 #include <secp256k1_ed25519.h>
+#include <secp256k1_dleag.h>
 #include <stdint.h>
 
 class CryptoLib
@@ -40,6 +41,46 @@ public:
         const unsigned char *key = reinterpret_cast<unsigned char*>(key_hack);
         return crypto_scalarmult_ed25519_base_noclamp(result, key);
     }
+
+    int dleag_size(int num_bits)
+    {
+        return secp256k1_dleag_size(num_bits);
+    }
+
+    int dleag_prove(uintptr_t result_hack, uintptr_t key_hack, uintptr_t nonce_hack, int num_bits) const
+    {
+        unsigned char *result = reinterpret_cast<unsigned char*>(result_hack);
+        const unsigned char *key = reinterpret_cast<unsigned char*>(key_hack);
+        const unsigned char *nonce = reinterpret_cast<unsigned char*>(nonce_hack);
+
+        size_t proof_len = secp256k1_dleag_size(num_bits);
+        return secp256k1_dleag_prove(
+            m_ctx,
+            result,
+            &proof_len,
+            key,
+            num_bits,
+            nonce,
+            &secp256k1_generator_const_g,
+            &secp256k1_generator_const_h,
+            ed25519_gen,
+            ed25519_gen2);
+    }
+
+    int dleag_verify(uintptr_t proof_hack, int proof_length) const
+    {
+        unsigned char *proof = reinterpret_cast<unsigned char*>(proof_hack);
+
+        return secp256k1_dleag_verify(
+            m_ctx,
+            proof,
+            proof_length,
+            &secp256k1_generator_const_g,
+            &secp256k1_generator_const_h,
+            ed25519_gen,
+            ed25519_gen2);
+    }
+
     secp256k1_context *m_ctx;
 };
 
@@ -55,5 +96,9 @@ EMSCRIPTEN_BINDINGS(crypto_lib) {
         .function("finalise", &CryptoLib::finalise)
         .function("GetPubKey", &CryptoLib::GetPubKey, allow_raw_pointers())
         .function("ed25519_scm_base", &CryptoLib::ed25519_scm_base, allow_raw_pointers())
+
+        .function("dleag_size", &CryptoLib::dleag_size)
+        .function("dleag_prove", &CryptoLib::dleag_prove, allow_raw_pointers())
+        .function("dleag_verify", &CryptoLib::dleag_verify, allow_raw_pointers())
         ;
 }

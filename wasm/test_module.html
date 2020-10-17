@@ -8,40 +8,43 @@
 <script>
 
 function bufferToHex(buffer) {
-    var s = '', h = '0123456789ABCDEF';
+    let s = '', h = '0123456789ABCDEF';
     (new Uint8Array(buffer)).forEach((v) => { s += h[v >> 4] + h[v & 15]; });
     return s;
 }
+
+// https://stackoverflow.com/questions/38987784/how-to-convert-a-hexadecimal-string-to-uint8array-and-back-in-javascript
+const fromHexString = hexString =>
+  new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+
+const toHexString = bytes =>
+  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 
 CryptoModule().then(function(Module) {
     console.log('module loaded');
     instance = new Module.CryptoLib();
     instance.initialise();
 
-    var k = new Uint8Array(32);
-    var i;
-    for (i = 0; i < k.length; i++) {
+    let k = new Uint8Array(32);
+    for (let i = 0; i < k.length; i++) {
         k[i] = 1;
     }
 
-    var ptr = Module._malloc(32);
+    let ptr = Module._malloc(32);
 
-    var dataHeap = new Uint8Array(Module.HEAPU8.buffer, ptr, 32);
+    let dataHeap = new Uint8Array(Module.HEAPU8.buffer, ptr, 32);
     dataHeap.set(new Uint8Array(k.buffer));
 
-    var ptr_out = Module._malloc(33);
+    let ptr_out = Module._malloc(33);
 
-    var dataHeapOut = new Uint8Array(Module.HEAPU8.buffer, ptr_out, 33);
+    let dataHeapOut = new Uint8Array(Module.HEAPU8.buffer, ptr_out, 33);
     for (i = 0; i < dataHeapOut.length; i++) {
         dataHeapOut[i] = 0;
     }
 
-    var rv = instance.GetPubKey(dataHeapOut.byteOffset, dataHeap.byteOffset);
+    let rv = instance.GetPubKey(dataHeapOut.byteOffset, dataHeap.byteOffset);
     console.log(rv);
     console.log(bufferToHex(dataHeapOut));
-
-    Module._free(ptr);
-    Module._free(ptr_out);
 
 
     dataHeap[31] = 0;
@@ -50,6 +53,41 @@ CryptoModule().then(function(Module) {
     console.log(rv);
     console.log(bufferToHex(dataHeapOut));
 
+    Module._free(ptr);
+    Module._free(ptr_out);
+
+
+    let buffer_size = instance.dleag_size(252);
+    console.log('buffer_size ' + buffer_size);
+
+    let ptr_key = Module._malloc(32);
+    let heap_key = new Uint8Array(Module.HEAPU8.buffer, ptr_key, 32);
+    heap_key.set(fromHexString("002a54c05d802210d63d0a1f9fd04eb9520e65d5db4eaabd8fcb47ddd144afe7"));
+    let ptr_nonce = Module._malloc(32);
+    let heap_nonce = new Uint8Array(Module.HEAPU8.buffer, ptr_nonce, 32);
+    heap_nonce.set(fromHexString("e156ce9e8f365515e436137e52bd6d4d62212688b24afc223bf6b61a4106412a"));
+
+    let ptr_dleag = Module._malloc(buffer_size);
+    let heap_dleag = new Uint8Array(Module.HEAPU8.buffer, ptr_dleag, buffer_size);
+
+    console.time('dleag_prove');
+
+    rv = instance.dleag_prove(heap_dleag.byteOffset, heap_key.byteOffset, heap_nonce.byteOffset, 252);
+    console.log(rv);
+
+    console.timeEnd('dleag_prove');
+    console.log(toHexString(heap_dleag));
+
+    console.time('dleag_verify');
+
+    rv = instance.dleag_verify(heap_dleag.byteOffset, buffer_size);
+    console.log(rv);
+
+    console.timeEnd('dleag_verify');
+
+    Module._free(ptr_key);
+    Module._free(ptr_nonce);
+    Module._free(ptr_dleag);
 
     instance.finalise();
     instance.delete();

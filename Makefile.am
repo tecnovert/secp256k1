@@ -171,6 +171,10 @@ if ENABLE_MODULE_GENERATOR
 include src/modules/generator/Makefile.am.include
 endif
 
-if ENABLE_MODULE_COMMITMENT
-include src/modules/commitment/Makefile.am.include
+if ENABLE_MODULE_DLEAG
+include src/modules/dleag/Makefile.am.include
+endif
+
+if ENABLE_MODULE_ECDSAOTVES
+include src/modules/ecdsaotves/Makefile.am.include
 endif

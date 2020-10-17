@@ -5,11 +5,25 @@
 extern "C" {
 #endif
 
+#include <inttypes.h>
+
+SECP256K1_API extern const unsigned char ed25519_gen[32];
+SECP256K1_API extern const unsigned char ed25519_gen2[32];
+SECP256K1_API extern const unsigned char ed25519_sc_group_order_be[32];
+SECP256K1_API extern const unsigned char ed25519_sc_zero[32];
+SECP256K1_API extern const unsigned char ed25519_sc_one[32];
+
+
+SECP256K1_API int ed25519_hash_to_curve_repeat(unsigned char r[32], const unsigned char in[32]);
+SECP256K1_API int ed25519_hash_to_curve_elligator(unsigned char r[32], const unsigned char in[32]);
+SECP256K1_API void reverse32(unsigned char *out, const unsigned char *in);
+SECP256K1_API int ed25519_less_than_l_be(const unsigned char *in);
+
 /* From libsodium
  * crypto_core_ed25519.h
  */
 
-#define SODIUM_EXPORT
+#define SODIUM_EXPORT SECP256K1_API
 
 
 #define crypto_core_ed25519_BYTES 32
@@ -165,6 +179,48 @@ SODIUM_EXPORT
 int crypto_scalarmult_ristretto255_base(unsigned char *q,
                                         const unsigned char *n)
             __attribute__ ((nonnull));
+
+
+
+/* From libsodium
+ * crypto_hash_sha512.h
+ */
+
+typedef struct crypto_hash_sha512_state {
+    uint64_t state[8];
+    uint64_t count[2];
+    uint8_t  buf[128];
+} crypto_hash_sha512_state;
+
+SODIUM_EXPORT
+size_t crypto_hash_sha512_statebytes(void);
+
+#define crypto_hash_sha512_BYTES 64U
+SODIUM_EXPORT
+size_t crypto_hash_sha512_bytes(void);
+
+SODIUM_EXPORT
+int crypto_hash_sha512(unsigned char *out, const unsigned char *in,
+                       unsigned long long inlen) __attribute__ ((nonnull(1)));
+
+SODIUM_EXPORT
+int crypto_hash_sha512_init(crypto_hash_sha512_state *state)
+            __attribute__ ((nonnull));
+
+SODIUM_EXPORT
+int crypto_hash_sha512_update(crypto_hash_sha512_state *state,
+                              const unsigned char *in,
+                              unsigned long long inlen)
+            __attribute__ ((nonnull(1)));
+
+SODIUM_EXPORT
+int crypto_hash_sha512_final(crypto_hash_sha512_state *state,
+                             unsigned char *out)
+            __attribute__ ((nonnull));
+
+SODIUM_EXPORT
+int sodium_memcmp(const void *const b1_, const void *const b2_, size_t len);
+
 
 #ifdef __cplusplus
 }
