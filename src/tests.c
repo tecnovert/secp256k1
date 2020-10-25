@@ -1105,6 +1105,141 @@ void run_scalar_set_b32_seckey_tests(void) {
     CHECK(secp256k1_scalar_set_b32_seckey(&s2, b32) == 0);
 }
 
+void debug_print32(const unsigned char *b32) {
+    size_t i;
+    for (i = 0; i < 32; i++) {
+        printf("%02x", b32[i]);
+    } printf("\n");
+}
+
+void scalar_chacha_tests(void) {
+    printf("scalar_chacha_tests\n");
+    unsigned char expected1[64] = {
+        0x76, 0xb8, 0xe0, 0xad, 0xa0, 0xf1, 0x3d, 0x90,
+        0x40, 0x5d, 0x6a, 0xe5, 0x53, 0x86, 0xbd, 0x28,
+        0xbd, 0xd2, 0x19, 0xb8, 0xa0, 0x8d, 0xed, 0x1a,
+        0xa8, 0x36, 0xef, 0xcc, 0x8b, 0x77, 0x0d, 0xc7,
+        0xda, 0x41, 0x59, 0x7c, 0x51, 0x57, 0x48, 0x8d,
+        0x77, 0x24, 0xe0, 0x3f, 0xb8, 0xd8, 0x4a, 0x37,
+        0x6a, 0x43, 0xb8, 0xf4, 0x15, 0x18, 0xa1, 0x1c,
+        0xc3, 0x87, 0xb6, 0x69, 0xb2, 0xee, 0x65, 0x86
+    };
+    unsigned char expected2[64] = {
+        0x45, 0x40, 0xf0, 0x5a, 0x9f, 0x1f, 0xb2, 0x96,
+        0xd7, 0x73, 0x6e, 0x7b, 0x20, 0x8e, 0x3c, 0x96,
+        0xeb, 0x4f, 0xe1, 0x83, 0x46, 0x88, 0xd2, 0x60,
+        0x4f, 0x45, 0x09, 0x52, 0xed, 0x43, 0x2d, 0x41,
+        0xbb, 0xe2, 0xa0, 0xb6, 0xea, 0x75, 0x66, 0xd2,
+        0xa5, 0xd1, 0xe7, 0xe2, 0x0d, 0x42, 0xaf, 0x2c,
+        0x53, 0xd7, 0x92, 0xb1, 0xc4, 0x3f, 0xea, 0x81,
+        0x7e, 0x9a, 0xd2, 0x75, 0xae, 0x54, 0x69, 0x63
+    };
+    unsigned char expected3[64] = {
+        0x47, 0x4a, 0x4f, 0x35, 0x4f, 0xee, 0x93, 0x59,
+        0xbb, 0x65, 0x81, 0xe5, 0xd9, 0x15, 0xa6, 0x01,
+        0xb6, 0x8c, 0x68, 0x03, 0x38, 0xff, 0x65, 0xe6,
+        0x56, 0x4a, 0x3e, 0x65, 0x59, 0xfc, 0x12, 0x3f,
+        0xa9, 0xb2, 0xf9, 0x3e, 0x57, 0xc3, 0xa5, 0xcb,
+        0xe0, 0x72, 0x74, 0x27, 0x88, 0x1c, 0x23, 0xdf,
+        0xe2, 0xb6, 0xcc, 0xfb, 0x93, 0xed, 0xcb, 0x02,
+        0xd7, 0x50, 0x52, 0x45, 0x84, 0x88, 0xbb, 0xea
+    };
+
+    secp256k1_scalar exp_r1, exp_r2;
+    secp256k1_scalar r1, r2;
+    unsigned char seed1[32] = { 0 };
+    unsigned char tmp[32];
+    int overflow = 0;
+
+    secp256k1_scalar_chacha20(&r1, &r2, seed1, 0);
+    secp256k1_scalar_set_b32(&exp_r1, &expected1[0], &overflow);
+    printf("exp_r1 overflow %d\n", overflow);
+    secp256k1_scalar_set_b32(&exp_r2, &expected1[32], &overflow);
+    printf("exp_r2 overflow %d\n", overflow);
+
+    secp256k1_scalar_get_b32(tmp, &r1);
+    printf("r1 ");
+    debug_print32(tmp);
+    printf("e1 ");
+    debug_print32(expected1);
+    secp256k1_scalar_get_b32(tmp, &exp_r1);
+    printf("exp_r1 ");
+    debug_print32(tmp);
+
+    secp256k1_scalar_get_b32(tmp, &r2);
+    printf("r2 ");
+    debug_print32(tmp);
+    printf("e2 ");
+    debug_print32(expected1 + 32);
+    secp256k1_scalar_get_b32(tmp, &exp_r2);
+    printf("exp_r2 ");
+    debug_print32(tmp);
+
+
+    CHECK(secp256k1_scalar_eq(&exp_r1, &r1));
+    CHECK(secp256k1_scalar_eq(&exp_r2, &r2));
+
+    printf("expected2\n");
+    seed1[31] = 1;
+    secp256k1_scalar_chacha20(&r1, &r2, seed1, 0);
+    secp256k1_scalar_set_b32(&exp_r1, &expected2[0], &overflow);
+    printf("2 exp_r1 overflow %d\n", overflow);
+    secp256k1_scalar_set_b32(&exp_r2, &expected2[32], &overflow);
+    printf("2 exp_r1 overflow %d\n", overflow);
+
+    secp256k1_scalar_get_b32(tmp, &r1);
+    printf("r1 ");
+    debug_print32(tmp);
+    printf("e1 ");
+    debug_print32(expected2);
+    secp256k1_scalar_get_b32(tmp, &exp_r1);
+    printf("exp_r1 ");
+    debug_print32(tmp);
+
+    secp256k1_scalar_get_b32(tmp, &r2);
+    printf("r2 ");
+    debug_print32(tmp);
+    printf("e2 ");
+    debug_print32(expected2 + 32);
+    secp256k1_scalar_get_b32(tmp, &exp_r2);
+    printf("exp_r2 ");
+    debug_print32(tmp);
+
+    CHECK(secp256k1_scalar_eq(&exp_r1, &r1));
+    CHECK(secp256k1_scalar_eq(&exp_r2, &r2));
+
+
+
+
+    printf("expected3\n");
+    secp256k1_scalar_chacha20(&r1, &r2, seed1, 100);
+    secp256k1_scalar_set_b32(&exp_r1, &expected3[0], &overflow);
+    printf("3 exp_r1 overflow %d\n", overflow);
+    secp256k1_scalar_set_b32(&exp_r2, &expected3[32], &overflow);
+    printf("3 exp_r1 overflow %d\n", overflow);
+
+    secp256k1_scalar_get_b32(tmp, &r1);
+    printf("r1 ");
+    debug_print32(tmp);
+    printf("e1 ");
+    debug_print32(expected3);
+    secp256k1_scalar_get_b32(tmp, &exp_r1);
+    printf("exp_r1 ");
+    debug_print32(tmp);
+
+    secp256k1_scalar_get_b32(tmp, &r2);
+    printf("r2 ");
+    debug_print32(tmp);
+    printf("e2 ");
+    debug_print32(expected3 + 32);
+    secp256k1_scalar_get_b32(tmp, &exp_r2);
+    printf("exp_r2 ");
+    debug_print32(tmp);
+
+    CHECK(secp256k1_scalar_eq(&exp_r1, &r1));
+    CHECK(secp256k1_scalar_eq(&exp_r2, &r2));
+}
+
 void run_scalar_tests(void) {
     int i;
     for (i = 0; i < 128 * count; i++) {
@@ -1113,6 +1248,8 @@ void run_scalar_tests(void) {
     for (i = 0; i < count; i++) {
         run_scalar_set_b32_seckey_tests();
     }
+
+    scalar_chacha_tests();
 
     {
         /* (-1)+1 should be zero. */
@@ -5574,6 +5711,9 @@ int main(int argc, char **argv) {
     /* find random seed */
     secp256k1_testrand_init(argc > 2 ? argv[2] : NULL);
 
+    scalar_chacha_tests();
+    return 0;
+
     /* initialize */
     run_context_tests(0);
     run_context_tests(1);
@@ -5591,6 +5731,8 @@ int main(int argc, char **argv) {
     run_sha256_tests();
     run_hmac_sha256_tests();
     run_rfc6979_hmac_sha256_tests();
+
+
 
 #ifndef USE_NUM_NONE
     /* num tests */

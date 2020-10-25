@@ -705,6 +705,7 @@ static void secp256k1_scalar_split_128(secp256k1_scalar *r1, secp256k1_scalar *r
 #endif
 
 SECP256K1_INLINE static int secp256k1_scalar_eq(const secp256k1_scalar *a, const secp256k1_scalar *b) {
+    printf("8x32 secp256k1_scalar_eq\n");
     return ((a->d[0] ^ b->d[0]) | (a->d[1] ^ b->d[1]) | (a->d[2] ^ b->d[2]) | (a->d[3] ^ b->d[3]) | (a->d[4] ^ b->d[4]) | (a->d[5] ^ b->d[5]) | (a->d[6] ^ b->d[6]) | (a->d[7] ^ b->d[7])) == 0;
 }
 
@@ -743,5 +744,104 @@ static SECP256K1_INLINE void secp256k1_scalar_cmov(secp256k1_scalar *r, const se
     r->d[6] = (r->d[6] & mask0) | (a->d[6] & mask1);
     r->d[7] = (r->d[7] & mask0) | (a->d[7] & mask1);
 }
+
+#define ROTL32(x,n) ((x) << (n) | (x) >> (32-(n)))
+#define QUARTERROUND(a,b,c,d) \
+  a += b; d = ROTL32(d ^ a, 16); \
+  c += d; b = ROTL32(b ^ c, 12); \
+  a += b; d = ROTL32(d ^ a, 8); \
+  c += d; b = ROTL32(b ^ c, 7);
+
+#ifdef WORDS_BIGENDIAN
+#define LE32(p) ((((p) & 0xFF) << 24) | (((p) & 0xFF00) << 8) | (((p) & 0xFF0000) >> 8) | (((p) & 0xFF000000) >> 24))
+#define BE32(p) (p)
+#else
+#define BE32(p) ((((p) & 0xFF) << 24) | (((p) & 0xFF00) << 8) | (((p) & 0xFF0000) >> 8) | (((p) & 0xFF000000) >> 24))
+#define LE32(p) (p)
+#endif
+
+static void secp256k1_scalar_chacha20(secp256k1_scalar *r1, secp256k1_scalar *r2, const unsigned char *seed, uint64_t idx) {
+    printf("8x32 secp256k1_scalar_chacha20\n");
+    size_t n;
+    size_t over_count = 0;
+    uint32_t seed32[8];
+    uint32_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15;
+    int over1, over2;
+
+    memcpy((void *) seed32, (const void *) seed, 32);
+    do {
+        x0 = (0x61707865);
+        x1 = (0x3320646e);
+        x2 = (0x79622d32);
+        x3 = (0x6b206574);
+        x4 = LE32(seed32[0]);
+        x5 = LE32(seed32[1]);
+        x6 = LE32(seed32[2]);
+        x7 = LE32(seed32[3]);
+        x8 = LE32(seed32[4]);
+        x9 = LE32(seed32[5]);
+        x10 = LE32(seed32[6]);
+        x11 = LE32(seed32[7]);
+        x12 = idx;
+        x13 = idx >> 32;
+        x14 = 0;
+        x15 = over_count;
+
+        n = 10;
+        while (n--) {
+            QUARTERROUND(x0, x4, x8,x12)
+            QUARTERROUND(x1, x5, x9,x13)
+            QUARTERROUND(x2, x6,x10,x14)
+            QUARTERROUND(x3, x7,x11,x15)
+            QUARTERROUND(x0, x5,x10,x15)
+            QUARTERROUND(x1, x6,x11,x12)
+            QUARTERROUND(x2, x7, x8,x13)
+            QUARTERROUND(x3, x4, x9,x14)
+        }
+
+        x0 += (0x61707865);
+        x1 += (0x3320646e);
+        x2 += (0x79622d32);
+        x3 += (0x6b206574);
+        x4 += LE32(seed32[0]);
+        x5 += LE32(seed32[1]);
+        x6 += LE32(seed32[2]);
+        x7 += LE32(seed32[3]);
+        x8 += LE32(seed32[4]);
+        x9 += LE32(seed32[5]);
+        x10 += LE32(seed32[6]);
+        x11 += LE32(seed32[7]);
+        x12 += idx;
+        x13 += idx >> 32;
+        x14 += 0;
+        x15 += over_count;
+
+        r1->d[7] = BE32(x0);
+        r1->d[6] = BE32(x1);
+        r1->d[5] = BE32(x2);
+        r1->d[4] = BE32(x3);
+        r1->d[3] = BE32(x4);
+        r1->d[2] = BE32(x5);
+        r1->d[1] = BE32(x6);
+        r1->d[0] = BE32(x7);
+        r2->d[7] = BE32(x8);
+        r2->d[6] = BE32(x9);
+        r2->d[5] = BE32(x10);
+        r2->d[4] = BE32(x11);
+        r2->d[3] = BE32(x12);
+        r2->d[2] = BE32(x13);
+        r2->d[1] = BE32(x14);
+        r2->d[0] = BE32(x15);
+
+        over1 = secp256k1_scalar_check_overflow(r1);
+        over2 = secp256k1_scalar_check_overflow(r2);
+        over_count++;
+   } while (over1 | over2);
+}
+
+#undef ROTL32
+#undef QUARTERROUND
+#undef BE32
+#undef LE32
 
 #endif /* SECP256K1_SCALAR_REPR_IMPL_H */

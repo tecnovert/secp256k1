@@ -1,11 +1,8 @@
 language: c
 os:
   - linux
-  - osx
 
 dist: bionic
-# Valgrind currently supports upto macOS 10.13, the latest xcode of that version is 10.1
-osx_image: xcode10.1
 addons:
   apt:
     packages:
@@ -20,24 +17,24 @@ env:
     - WIDEMUL=auto  BIGNUM=auto  ENDOMORPHISM=no  STATICPRECOMPUTATION=yes  ECMULTGENPRECISION=auto  ASM=no  BUILD=check  WITH_VALGRIND=yes RUN_VALGRIND=no EXTRAFLAGS=  HOST=  ECDH=no  RECOVERY=no SCHNORRSIG=no EXPERIMENTAL=no CTIMETEST=yes BENCH=yes ITERS=2
   matrix:
     - WIDEMUL=int64   RECOVERY=yes
-    - WIDEMUL=int64   ECDH=yes  EXPERIMENTAL=yes SCHNORRSIG=yes
-    - WIDEMUL=int64   ENDOMORPHISM=yes
+    #- WIDEMUL=int64   ECDH=yes  EXPERIMENTAL=yes SCHNORRSIG=yes
+    #- WIDEMUL=int64   ENDOMORPHISM=yes
     - WIDEMUL=int128
-    - WIDEMUL=int128  RECOVERY=yes EXPERIMENTAL=yes SCHNORRSIG=yes
-    - WIDEMUL=int128  ENDOMORPHISM=yes
-    - WIDEMUL=int128  ENDOMORPHISM=yes  ECDH=yes EXPERIMENTAL=yes SCHNORRSIG=yes
-    - WIDEMUL=int128                    ASM=x86_64
-    - WIDEMUL=int128  ENDOMORPHISM=yes  ASM=x86_64
-    - BIGNUM=no
-    - BIGNUM=no       ENDOMORPHISM=yes RECOVERY=yes EXPERIMENTAL=yes SCHNORRSIG=yes
-    - BIGNUM=no       STATICPRECOMPUTATION=no
-    - BUILD=distcheck WITH_VALGRIND=no CTIMETEST=no BENCH=no
-    - CPPFLAGS=-DDETERMINISTIC
-    - CFLAGS=-O0 CTIMETEST=no
-    - ECMULTGENPRECISION=2
-    - ECMULTGENPRECISION=8
-    - RUN_VALGRIND=yes ENDOMORPHISM=yes BIGNUM=no ASM=x86_64 EXPERIMENTAL=yes ECDH=yes  RECOVERY=yes EXTRAFLAGS="--disable-openssl-tests" BUILD=
-    - RUN_VALGRIND=yes                  BIGNUM=no ASM=x86_64 EXPERIMENTAL=yes ECDH=yes  RECOVERY=yes EXTRAFLAGS="--disable-openssl-tests" BUILD=
+    #- WIDEMUL=int128  RECOVERY=yes EXPERIMENTAL=yes SCHNORRSIG=yes
+    #- WIDEMUL=int128  ENDOMORPHISM=yes
+    #- WIDEMUL=int128  ENDOMORPHISM=yes  ECDH=yes EXPERIMENTAL=yes SCHNORRSIG=yes
+    #- WIDEMUL=int128                    ASM=x86_64
+    #- WIDEMUL=int128  ENDOMORPHISM=yes  ASM=x86_64
+    #- BIGNUM=no
+    #- BIGNUM=no       ENDOMORPHISM=yes RECOVERY=yes EXPERIMENTAL=yes SCHNORRSIG=yes
+    #- BIGNUM=no       STATICPRECOMPUTATION=no
+    #- BUILD=distcheck WITH_VALGRIND=no CTIMETEST=no BENCH=no
+    #- CPPFLAGS=-DDETERMINISTIC
+    #- CFLAGS=-O0 CTIMETEST=no
+    #- ECMULTGENPRECISION=2
+    #- ECMULTGENPRECISION=8
+    #- RUN_VALGRIND=yes ENDOMORPHISM=yes BIGNUM=no ASM=x86_64 EXPERIMENTAL=yes ECDH=yes  RECOVERY=yes EXTRAFLAGS="--disable-openssl-tests" BUILD=
+    #- RUN_VALGRIND=yes                  BIGNUM=no ASM=x86_64 EXPERIMENTAL=yes ECDH=yes  RECOVERY=yes EXTRAFLAGS="--disable-openssl-tests" BUILD=
 matrix:
   fast_finish: true
   include:

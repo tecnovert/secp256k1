@@ -115,6 +115,7 @@ static void secp256k1_scalar_split_128(secp256k1_scalar *r1, secp256k1_scalar *r
 }
 
 SECP256K1_INLINE static int secp256k1_scalar_eq(const secp256k1_scalar *a, const secp256k1_scalar *b) {
+    /*printf("low secp256k1_scalar_eq\n");*/
     return *a == *b;
 }
 
@@ -124,6 +125,13 @@ static SECP256K1_INLINE void secp256k1_scalar_cmov(secp256k1_scalar *r, const se
     mask0 = flag + ~((uint32_t)0);
     mask1 = ~mask0;
     *r = (*r & mask0) | (*a & mask1);
+}
+
+#include <stdio.h>
+SECP256K1_INLINE static void secp256k1_scalar_chacha20(secp256k1_scalar *r1, secp256k1_scalar *r2, const unsigned char *seed, uint64_t n) {
+    printf("low secp256k1_scalar_chacha20\n");
+    *r1 = (seed[0] + n) % EXHAUSTIVE_TEST_ORDER;
+    *r2 = (seed[1] + n) % EXHAUSTIVE_TEST_ORDER;
 }
 
 #endif /* SECP256K1_SCALAR_REPR_IMPL_H */
