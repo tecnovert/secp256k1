@@ -400,7 +400,7 @@ SECP256K1_INLINE static int ed25519_decode_check_scalar(unsigned char *sc, const
     return 1;
 }
 
-#ifdef WORDS_BIGENDIAN
+#ifdef SECP256K1_BIG_ENDIAN
 #define BE32(x) (x)
 #else
 #define BE32(p) ((((p) & 0xFF) << 24) | (((p) & 0xFF00) << 8) | (((p) & 0xFF0000) >> 8) | (((p) & 0xFF000000) >> 24))

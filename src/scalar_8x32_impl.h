@@ -752,7 +752,7 @@ static SECP256K1_INLINE void secp256k1_scalar_cmov(secp256k1_scalar *r, const se
   a += b; d = ROTL32(d ^ a, 8); \
   c += d; b = ROTL32(b ^ c, 7);
 
-#ifdef WORDS_BIGENDIAN
+#ifdef SECP256K1_BIG_ENDIAN
 #define LE32(p) ((((p) & 0xFF) << 24) | (((p) & 0xFF00) << 8) | (((p) & 0xFF0000) >> 8) | (((p) & 0xFF000000) >> 24))
 #define BE32(p) (p)
 #else
