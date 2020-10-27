@@ -593,7 +593,7 @@ int secp256k1_dleag_prove(
         }
         secp256k1_sha256_write(&hash_state, tmp_bytes, 33);
 
-        pe = xi ? &ed25519_sc_one[0] : &ed25519_sc_zero[0];
+        pe = xi ? ed25519_sc_one : ed25519_sc_zero;
         ge25519_scalarmult(&ep1, pe, &gej_gen_e_a);
         ge25519_scalarmult(&ep2, s[i], &gej_gen_e_b);
 
@@ -801,9 +801,6 @@ int secp256k1_dleag_verify(
     ARG_CHECK(gen_e_a != NULL);
     ARG_CHECK(gen_e_b != NULL);
 
-    printf("secp256k1_dleag_verify\n");
-    printf("proof_len %ld\n", proof_len);
-    printf("secp256k1_dleag_size %ld\n", secp256k1_dleag_size(n_bits));
     if (proof_len != secp256k1_dleag_size(n_bits)) {
         return 0;
     }
@@ -828,11 +825,9 @@ int secp256k1_dleag_verify(
     if (!secp256k1_ec_pubkey_parse(ctx, &spk, proof, 33) ||
         !secp256k1_ecdsa_signature_parse_compact(ctx, &sig, proof + 65) ||
         !secp256k1_ecdsa_verify_gen(ctx, &sig, preimage_hash, &spk, gen_s_a)) {
-        printf("ecdsa failed\n");
         return 0;
     }
     if (!ed25519_verify_gen(proof + 65 + 64, preimage_hash, 32, proof + 33, gen_e_a)) {
-        printf("eddsa failed\n");
         return 0;
     }
     }
