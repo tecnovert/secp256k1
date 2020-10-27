@@ -24,7 +24,7 @@ void test_ed25519_infinity(void) {
     ge25519_add(&r_p1p1, &Q, &q_cached);
     ge25519_p1p1_to_p3(&R, &r_p1p1);
     ge25519_p3_tobytes(tmp, &R);
-    CHECK(memcmp(tmp, ed25519_gen2, 32) == 0);
+    CHECK(secp256k1_memcmp_var(tmp, ed25519_gen2, 32) == 0);
 
     ge25519_p3_tobytes(tmp, &Q);
     CHECK(_crypto_scalarmult_ed25519_is_inf(tmp) == 1);
@@ -66,10 +66,10 @@ void run_ed25519_tests(void) {
     memset(r, 0, 32);
 
     crypto_core_ed25519_scalar_add(r, k1, k2);
-    CHECK(memcmp(r, k2, 32) > 0);
+    CHECK(secp256k1_memcmp_var(r, k2, 32) > 0);
 
     crypto_core_ed25519_scalar_sub(r, r, k2);
-    CHECK(memcmp(r, k1, 32) == 0);
+    CHECK(secp256k1_memcmp_var(r, k1, 32) == 0);
 
     rv = crypto_scalarmult_ed25519_base_noclamp(K1, k1);
     CHECK(rv == 0);
@@ -82,17 +82,17 @@ void run_ed25519_tests(void) {
 
     rv = crypto_core_ed25519_sub(r, r, K2);
     CHECK(rv == 0);
-    CHECK(memcmp(r, K1, 32) == 0);
+    CHECK(secp256k1_memcmp_var(r, K1, 32) == 0);
 
     CHECK(crypto_scalarmult_ed25519_noclamp(K3, k1, ed25519_gen) == 0);
-    CHECK(memcmp(K3, K1, 32) == 0);
+    CHECK(secp256k1_memcmp_var(K3, K1, 32) == 0);
 
     CHECK(ed25519_hash_to_curve_repeat(r, T1) == 1);
-    CHECK(memcmp(r, T2, 32) == 0);
+    CHECK(secp256k1_memcmp_var(r, T2, 32) == 0);
 
 
     CHECK(ed25519_hash_to_curve_repeat(r, ed25519_gen) == 1);
-    CHECK(memcmp(r, ed25519_gen2, 32) == 0);
+    CHECK(secp256k1_memcmp_var(r, ed25519_gen2, 32) == 0);
 
     CHECK(ed25519_hash_to_curve_elligator(r, ed25519_gen) == 1);
 

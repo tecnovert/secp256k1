@@ -169,8 +169,8 @@ int ecdsaotves_enc_verify(
         !secp256k1_decode_check_point(&PE, pkE)) {
         return 0;
     }
-    if (memcmp(ct,      base_point_encoded, 33) == 0 ||
-        memcmp(ct + 33, base_point_encoded, 33) == 0) {
+    if (secp256k1_memcmp_var(ct,      base_point_encoded, 33) == 0 ||
+        secp256k1_memcmp_var(ct + 33, base_point_encoded, 33) == 0) {
         return 0;
     }
     if (!secp256k1_decode_check_point(&R1, ct) ||
@@ -185,10 +185,10 @@ int ecdsaotves_enc_verify(
     if (!secp256k1_scalar_set_b32_seckey(&r, ct + 164)) {
         return 0;
     }
-    if (memcmp(ct + 98, base_point_encoded, 33) == 0 ||    /* K1 == B1 */
-        memcmp(ct + 98, pkE, 33) == 0 ||                   /* K1 == B2 */
-        memcmp(ct + 131, base_point_encoded, 33) == 0 ||   /* K2 == B1 */
-        memcmp(ct + 131, pkE, 33) == 0) {                  /* K2 == B2 */
+    if (secp256k1_memcmp_var(ct + 98, base_point_encoded, 33) == 0 ||    /* K1 == B1 */
+        secp256k1_memcmp_var(ct + 98, pkE, 33) == 0 ||                   /* K1 == B2 */
+        secp256k1_memcmp_var(ct + 131, base_point_encoded, 33) == 0 ||   /* K2 == B1 */
+        secp256k1_memcmp_var(ct + 131, pkE, 33) == 0) {                  /* K2 == B2 */
         return 0;
     }
     secp256k1_sha256_initialize(&h);
@@ -218,9 +218,9 @@ int ecdsaotves_enc_verify(
     }
     /* dleq True if K1 == T1 + C1 and K2 == T2 + C2 else False */
     if (!secp256k1_gej_serialize(ctx, tmp33, &T1) ||
-        0 != memcmp(tmp33, ct + 98, 33) ||
+        0 != secp256k1_memcmp_var(tmp33, ct + 98, 33) ||
         !secp256k1_gej_serialize(ctx, tmp33, &T2) ||
-        0 != memcmp(tmp33, ct + 131, 33)) {
+        0 != secp256k1_memcmp_var(tmp33, ct + 131, 33)) {
         return 0;
     }
     /* r2x = R2.x % o */
@@ -243,7 +243,7 @@ int ecdsaotves_enc_verify(
     secp256k1_scalar_inverse(&s, &s);
     secp256k1_ecmult(&ctx->ecmult_ctx, &T2, &T1, &s, &secp256k1_scalar_zero);
     if (!secp256k1_gej_serialize(ctx, tmp33, &T2) ||
-        0 != memcmp(tmp33, ct, 33)) {
+        0 != secp256k1_memcmp_var(tmp33, ct, 33)) {
         return 0;
     }
 
