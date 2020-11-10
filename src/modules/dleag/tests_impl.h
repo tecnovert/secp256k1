@@ -34,6 +34,8 @@ void test_dleag(void) {
     CHECK(secp256k1_dleag_verify(ctx, proof, proof_len,
         &secp256k1_generator_const_g, &secp256k1_generator_const_h,
         ed25519_gen, ed25519_gen2));
+
+    CHECK(secp256k1_dleag_verify_ed25519_point(ctx, ed25519_gen));
 }
 
 void run_dleag_tests(void) {

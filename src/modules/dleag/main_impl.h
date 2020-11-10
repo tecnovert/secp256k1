@@ -991,4 +991,17 @@ int secp256k1_dleag_verify(
     return 1;
 }
 
+int secp256k1_dleag_verify_secp256k1_point(const secp256k1_context *ctx, const unsigned char *p) {
+    secp256k1_gej P;
+    VERIFY_CHECK(ctx != NULL);
+    return secp256k1_decode_check_point(&P, p);
+}
+
+int secp256k1_dleag_verify_ed25519_point(const secp256k1_context *ctx, const unsigned char *p) {
+    ge25519_p3 P;
+    VERIFY_CHECK(ctx != NULL);
+    return ed25519_decode_check_point(&P, p);
+}
+
+
 #endif

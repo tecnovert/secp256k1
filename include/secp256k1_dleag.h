@@ -108,6 +108,15 @@ SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int ed25519_verify_gen(
     const unsigned char *gen
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(4) SECP256K1_ARG_NONNULL(5);
 
+SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int secp256k1_dleag_verify_secp256k1_point(
+    const secp256k1_context *ctx,
+    const unsigned char *p
+) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2);
+
+SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int secp256k1_dleag_verify_ed25519_point(
+    const secp256k1_context *ctx,
+    const unsigned char *p
+) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2);
 
 #ifdef __cplusplus
 }
