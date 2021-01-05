@@ -1,8 +1,8 @@
-/**********************************************************************
- * Copyright (c) 2020 Jonas Nick                                      *
- * Distributed under the MIT software license, see the accompanying   *
- * file COPYING or http://www.opensource.org/licenses/mit-license.php.*
- **********************************************************************/
+/***********************************************************************
+ * Copyright (c) 2020 Jonas Nick                                       *
+ * Distributed under the MIT software license, see the accompanying    *
+ * file COPYING or https://www.opensource.org/licenses/mit-license.php.*
+ ***********************************************************************/
 
 #ifndef _SECP256K1_MODULE_EXTRAKEYS_MAIN_
 #define _SECP256K1_MODULE_EXTRAKEYS_MAIN_
@@ -180,7 +180,7 @@ int secp256k1_keypair_create(const secp256k1_context* ctx, secp256k1_keypair *ke
 
     ret = secp256k1_ec_pubkey_create_helper(&ctx->ecmult_gen_ctx, &sk, &pk, seckey32);
     secp256k1_keypair_save(keypair, &sk, &pk);
-    memczero(keypair, sizeof(*keypair), !ret);
+    secp256k1_memczero(keypair, sizeof(*keypair), !ret);
 
     secp256k1_scalar_clear(&sk);
     return ret;

@@ -1,8 +1,8 @@
-/**********************************************************************
- * Copyright (c) 2013, 2014, 2015 Pieter Wuille, Gregory Maxwell      *
- * Distributed under the MIT software license, see the accompanying   *
- * file COPYING or http://www.opensource.org/licenses/mit-license.php.*
- **********************************************************************/
+/***********************************************************************
+ * Copyright (c) 2013, 2014, 2015 Pieter Wuille, Gregory Maxwell       *
+ * Distributed under the MIT software license, see the accompanying    *
+ * file COPYING or https://www.opensource.org/licenses/mit-license.php.*
+ ***********************************************************************/
 
 #if defined HAVE_CONFIG_H
 #include "libsecp256k1-config.h"
@@ -5460,18 +5460,18 @@ void run_ecdsa_openssl(void) {
 # include "modules/ecdsaotves/tests_impl.h"
 #endif
 
-void run_memczero_test(void) {
+void run_secp256k1_memczero_test(void) {
     unsigned char buf1[6] = {1, 2, 3, 4, 5, 6};
     unsigned char buf2[sizeof(buf1)];
 
-    /* memczero(..., ..., 0) is a noop. */
+    /* secp256k1_memczero(..., ..., 0) is a noop. */
     memcpy(buf2, buf1, sizeof(buf1));
-    memczero(buf1, sizeof(buf1), 0);
+    secp256k1_memczero(buf1, sizeof(buf1), 0);
     CHECK(secp256k1_memcmp_var(buf1, buf2, sizeof(buf1)) == 0);
 
-    /* memczero(..., ..., 1) zeros the buffer. */
+    /* secp256k1_memczero(..., ..., 1) zeros the buffer. */
     memset(buf2, 0, sizeof(buf2));
-    memczero(buf1, sizeof(buf1) , 1);
+    secp256k1_memczero(buf1, sizeof(buf1) , 1);
     CHECK(secp256k1_memcmp_var(buf1, buf2, sizeof(buf1)) == 0);
 }
 
@@ -5653,6 +5653,15 @@ int main(int argc, char **argv) {
     /* find iteration count */
     if (argc > 1) {
         count = strtol(argv[1], NULL, 0);
+    } else {
+        const char* env = getenv("SECP256K1_TEST_ITERS");
+        if (env) {
+            count = strtol(env, NULL, 0);
+        }
+    }
+    if (count <= 0) {
+        fputs("An iteration count of 0 or less is not allowed.\n", stderr);
+        return EXIT_FAILURE;
     }
     printf("test count = %i\n", count);
 
@@ -5768,7 +5777,7 @@ int main(int argc, char **argv) {
     /* util tests */
     run_util_tests();
 
-    run_memczero_test();
+    run_secp256k1_memczero_test();
 
     run_cmov_tests();
 
