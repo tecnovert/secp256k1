@@ -1,4 +1,4 @@
-// Copyright (c) 2020 tecnovert
+// Copyright (c) 2020-2021 tecnovert
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -40,6 +40,22 @@ public:
         unsigned char *result = reinterpret_cast<unsigned char*>(result_hack);
         const unsigned char *key = reinterpret_cast<unsigned char*>(key_hack);
         return crypto_scalarmult_ed25519_base_noclamp(result, key);
+    }
+
+    void ed25519_scadd(uintptr_t z_hack, uintptr_t x_hack, uintptr_t y_hack) const
+    {
+        unsigned char *result = reinterpret_cast<unsigned char*>(z_hack);
+        const unsigned char *x = reinterpret_cast<unsigned char*>(x_hack);
+        const unsigned char *y = reinterpret_cast<unsigned char*>(y_hack);
+        crypto_core_ed25519_scalar_add(result, x, y);
+    }
+
+    int ed25519_add(uintptr_t z_hack, uintptr_t x_hack, uintptr_t y_hack) const
+    {
+        unsigned char *result = reinterpret_cast<unsigned char*>(z_hack);
+        const unsigned char *x = reinterpret_cast<unsigned char*>(x_hack);
+        const unsigned char *y = reinterpret_cast<unsigned char*>(y_hack);
+        return crypto_core_ed25519_add(result, x, y);
     }
 
     int dleag_size(int num_bits)
@@ -96,6 +112,8 @@ EMSCRIPTEN_BINDINGS(crypto_lib) {
         .function("finalise", &CryptoLib::finalise)
         .function("GetPubKey", &CryptoLib::GetPubKey, allow_raw_pointers())
         .function("ed25519_scm_base", &CryptoLib::ed25519_scm_base, allow_raw_pointers())
+        .function("ed25519_scadd", &CryptoLib::ed25519_scadd, allow_raw_pointers())
+        .function("ed25519_add", &CryptoLib::ed25519_add, allow_raw_pointers())
 
         .function("dleag_size", &CryptoLib::dleag_size)
         .function("dleag_prove", &CryptoLib::dleag_prove, allow_raw_pointers())

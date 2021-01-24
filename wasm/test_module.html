@@ -29,32 +29,75 @@ CryptoModule().then(function(Module) {
     for (let i = 0; i < k.length; i++) {
         k[i] = 1;
     }
+    console.log('x = ' + bufferToHex(k));
 
     let ptr = Module._malloc(32);
-
     let dataHeap = new Uint8Array(Module.HEAPU8.buffer, ptr, 32);
     dataHeap.set(new Uint8Array(k.buffer));
 
     let ptr_out = Module._malloc(33);
-
     let dataHeapOut = new Uint8Array(Module.HEAPU8.buffer, ptr_out, 33);
     for (i = 0; i < dataHeapOut.length; i++) {
         dataHeapOut[i] = 0;
     }
 
+    let ptr_out_b = Module._malloc(32);
+    let dataHeapOutB = new Uint8Array(Module.HEAPU8.buffer, ptr_out_b, 32);
+    for (i = 0; i < dataHeapOutB.length; i++) {
+        dataHeapOutB[i] = 0;
+    }
+
+    let ptr_out_c = Module._malloc(32);
+    let dataHeapOutC = new Uint8Array(Module.HEAPU8.buffer, ptr_out_c, 32);
+    for (i = 0; i < dataHeapOutC.length; i++) {
+        dataHeapOutC[i] = 0;
+    }
+
+    console.log('GetPubKey');
     let rv = instance.GetPubKey(dataHeapOut.byteOffset, dataHeap.byteOffset);
     console.log(rv);
     console.log(bufferToHex(dataHeapOut));
 
-
+    console.log('ed25519_scm_base');
     dataHeap[31] = 0;
     dataHeapOut[32] = 0;
     rv = instance.ed25519_scm_base(dataHeapOut.byteOffset, dataHeap.byteOffset);
     console.log(rv);
     console.log(bufferToHex(dataHeapOut));
 
+    console.log('ed25519_scadd x, x');
+    instance.ed25519_scadd(dataHeapOutB.byteOffset, dataHeap.byteOffset, dataHeap.byteOffset);
+    result_hex = bufferToHex(dataHeapOutB)
+    console.log(result_hex);
+    if (result_hex != '0202020202020202020202020202020202020202020202020202020202020200') {
+        console.log('ERROR: Incorrect result');
+        return;
+    }
+
+    console.log('ed25519_add X, X');
+    rv = instance.ed25519_add(dataHeapOutC.byteOffset, dataHeapOut.byteOffset, dataHeapOut.byteOffset);
+    console.log(rv);
+    result_hex = bufferToHex(dataHeapOutC)
+    console.log(result_hex);
+    if (result_hex != '36B27F432107F021040E00EAEF510745C9921350FBD3B42E0F37BFBADDA7419B') {
+        console.log('ERROR: Incorrect result');
+        return;
+    }
+
+    console.log('ed25519_scm_base 2x');
+    rv = instance.ed25519_scm_base(dataHeapOutC.byteOffset, dataHeapOutB.byteOffset);
+    console.log(rv);
+    result_hex = bufferToHex(dataHeapOutC)
+    console.log(result_hex);
+    if (result_hex != '36B27F432107F021040E00EAEF510745C9921350FBD3B42E0F37BFBADDA7419B') {
+        console.log('ERROR: Incorrect result');
+        return;
+    }
+
     Module._free(ptr);
     Module._free(ptr_out);
+    Module._free(ptr_out_b);
+    Module._free(ptr_out_c);
 
 
     let buffer_size = instance.dleag_size(252);
@@ -84,6 +127,10 @@ CryptoModule().then(function(Module) {
     console.log(rv);
 
     console.timeEnd('dleag_verify');
+    if (rv != 1) {
+        console.log('ERROR: Incorrect result');
+        return;
+    }
 
     Module._free(ptr_key);
     Module._free(ptr_nonce);
