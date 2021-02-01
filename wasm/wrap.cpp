@@ -83,6 +83,33 @@ public:
             ed25519_gen2);
     }
 
+    int dleag_prove_le(uintptr_t result_hack, uintptr_t key_hack, uintptr_t nonce_hack, int num_bits) const
+    {
+        unsigned char *result = reinterpret_cast<unsigned char*>(result_hack);
+        const unsigned char *key = reinterpret_cast<unsigned char*>(key_hack);
+        const unsigned char *nonce = reinterpret_cast<unsigned char*>(nonce_hack);
+
+        unsigned char key_be[32];
+        for (int i = 0; i < 32; ++i) {
+            key_be[i] = key[31 - i];
+        }
+
+        size_t proof_len = secp256k1_dleag_size(num_bits);
+        int rv = secp256k1_dleag_prove(
+            m_ctx,
+            result,
+            &proof_len,
+            key_be,
+            num_bits,
+            nonce,
+            &secp256k1_generator_const_g,
+            &secp256k1_generator_const_h,
+            ed25519_gen,
+            ed25519_gen2);
+        sodium_memzero(key_be, 32);
+        return rv;
+    }
+
     int dleag_verify(uintptr_t proof_hack, int proof_length) const
     {
         unsigned char *proof = reinterpret_cast<unsigned char*>(proof_hack);
@@ -117,6 +144,7 @@ EMSCRIPTEN_BINDINGS(crypto_lib) {
 
         .function("dleag_size", &CryptoLib::dleag_size)
         .function("dleag_prove", &CryptoLib::dleag_prove, allow_raw_pointers())
+        .function("dleag_prove_le", &CryptoLib::dleag_prove_le, allow_raw_pointers())
         .function("dleag_verify", &CryptoLib::dleag_verify, allow_raw_pointers())
         ;
 }

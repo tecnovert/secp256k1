@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (c) 2020 tecnovert                                       *
+ * Copyright (c) 2020-2021 tecnovert                                       *
  * Distributed under the MIT software license, see the accompanying   *
  * file COPYING or http://www.opensource.org/licenses/mit-license.php.*
  **********************************************************************/
@@ -134,7 +134,7 @@ int ecdsaotves_enc_sign(
     }
 
     /* memzero */
-    memset(tmp32, 0, 32);
+    sodium_memzero(tmp32, 32);
     secp256k1_scalar_clear(&r);
     secp256k1_scalar_clear(&r2x);
     secp256k1_scalar_clear(&msg);
@@ -346,7 +346,7 @@ int ecdsaotves_rec_enc_key(
         }
     }
 
-    memset(tmp33, 0, 33);
+    sodium_memzero(tmp33, 33);
     secp256k1_scalar_clear(&y);
     secp256k1_scalar_clear(&sigs);
     secp256k1_scalar_clear(&sct);

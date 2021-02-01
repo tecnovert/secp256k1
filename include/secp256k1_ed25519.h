@@ -221,6 +221,9 @@ int crypto_hash_sha512_final(crypto_hash_sha512_state *state,
 SODIUM_EXPORT
 int sodium_memcmp(const void *const b1_, const void *const b2_, size_t len);
 
+SODIUM_EXPORT
+void sodium_memzero(void * const pnt, const size_t len);
+
 
 #ifdef __cplusplus
 }

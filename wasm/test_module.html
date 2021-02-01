@@ -112,13 +112,16 @@ CryptoModule().then(function(Module) {
 
     let ptr_dleag = Module._malloc(buffer_size);
     let heap_dleag = new Uint8Array(Module.HEAPU8.buffer, ptr_dleag, buffer_size);
+    let ptr_dleag2 = Module._malloc(buffer_size);
+    let heap_dleag2 = new Uint8Array(Module.HEAPU8.buffer, ptr_dleag2, buffer_size);
 
+    console.log('heap_key');
+    console.log(bufferToHex(heap_key));
     console.time('dleag_prove');
 
     rv = instance.dleag_prove(heap_dleag.byteOffset, heap_key.byteOffset, heap_nonce.byteOffset, 252);
-    console.log(rv);
-
     console.timeEnd('dleag_prove');
+    console.log(rv);
     console.log(toHexString(heap_dleag));
 
     console.time('dleag_verify');
@@ -132,12 +135,55 @@ CryptoModule().then(function(Module) {
         return;
     }
 
+    let ptr_test_ed_vk = Module._malloc(32);
+    let heap_test_ed_vk = new Uint8Array(Module.HEAPU8.buffer, ptr_test_ed_vk, 32);
+    let ptr_test_ed_pk = Module._malloc(32);
+    let heap_test_ed_pk = new Uint8Array(Module.HEAPU8.buffer, ptr_test_ed_pk, 32);
+
+    for (var i = 0; i < 32; i++) {
+        heap_test_ed_vk[i] = heap_key[31-i];
+    }
+    console.log('heap_test_ed_vk');
+    console.log(bufferToHex(heap_test_ed_vk));
+
+    rv = instance.ed25519_scm_base(heap_test_ed_pk.byteOffset, heap_test_ed_vk.byteOffset);
+    console.log(rv);
+    console.log(bufferToHex(heap_test_ed_pk));
+
+    ed25519_pk_from_dleag = heap_dleag.slice(33, 33 + 32);
+    console.log(toHexString(ed25519_pk_from_dleag));
+    for (var i = 0; i < 32; i++) {
+        if (heap_test_ed_pk[i] != ed25519_pk_from_dleag[i]) {
+            console.log('ERROR: Incorrect result');
+            return;
+        }
+    }
+
+    console.time('dleag_prove_le');
+    rv = instance.dleag_prove_le(heap_dleag2.byteOffset, heap_test_ed_vk.byteOffset, heap_nonce.byteOffset, 252);
+    console.timeEnd('dleag_prove_le');
+    console.log(rv);
+    console.log(toHexString(heap_dleag2));
+    for (let i = 0; i < buffer_size; i++) {
+        if (heap_dleag[i] != heap_dleag2[i]) {
+            console.log('ERROR: Incorrect result');
+            return;
+        }
+    }
+
+    Module._free(ptr_test_ed_vk);
+    Module._free(ptr_test_ed_pk);
+
     Module._free(ptr_key);
     Module._free(ptr_nonce);
     Module._free(ptr_dleag);
+    Module._free(ptr_dleag2);
+
 
     instance.finalise();
     instance.delete();
+
+    console.log('Tests passed!');
     })
 </script>
 
