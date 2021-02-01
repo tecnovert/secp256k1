@@ -420,7 +420,8 @@ fi
 
 # Handle static precomputation (after everything which modifies CFLAGS and friends)
 if test x"$use_ecmult_static_precomputation" != x"no"; then
-  if test x"$cross_compiling" = x"no"; then
+  #if test x"$cross_compiling" = x"no"; then
+  if 0; then # wasm
     set_precomp=yes
     if test x"${CC_FOR_BUILD+x}${CFLAGS_FOR_BUILD+x}${CPPFLAGS_FOR_BUILD+x}${LDFLAGS_FOR_BUILD+x}" != x; then
       AC_MSG_WARN([CC_FOR_BUILD, CFLAGS_FOR_BUILD, CPPFLAGS_FOR_BUILD, and/or LDFLAGS_FOR_BUILD is set but ignored because we are not cross-compiling.])
