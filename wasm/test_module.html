@@ -31,25 +31,25 @@ CryptoModule().then(function(Module) {
     }
     console.log('x = ' + bufferToHex(k));
 
-    let ptr = Module._malloc(32);
-    let dataHeap = new Uint8Array(Module.HEAPU8.buffer, ptr, 32);
+    let ptr_k = Module._malloc(32);
+    let dataHeap = new Uint8Array(Module.HEAPU8.buffer, ptr_k, 32);
     dataHeap.set(new Uint8Array(k.buffer));
 
     let ptr_out = Module._malloc(33);
     let dataHeapOut = new Uint8Array(Module.HEAPU8.buffer, ptr_out, 33);
-    for (i = 0; i < dataHeapOut.length; i++) {
+    for (let i = 0; i < dataHeapOut.length; i++) {
         dataHeapOut[i] = 0;
     }
 
     let ptr_out_b = Module._malloc(32);
     let dataHeapOutB = new Uint8Array(Module.HEAPU8.buffer, ptr_out_b, 32);
-    for (i = 0; i < dataHeapOutB.length; i++) {
+    for (let i = 0; i < dataHeapOutB.length; i++) {
         dataHeapOutB[i] = 0;
     }
 
     let ptr_out_c = Module._malloc(32);
     let dataHeapOutC = new Uint8Array(Module.HEAPU8.buffer, ptr_out_c, 32);
-    for (i = 0; i < dataHeapOutC.length; i++) {
+    for (let i = 0; i < dataHeapOutC.length; i++) {
         dataHeapOutC[i] = 0;
     }
 
@@ -94,7 +94,6 @@ CryptoModule().then(function(Module) {
         return;
     }
 
-    Module._free(ptr);
     Module._free(ptr_out);
     Module._free(ptr_out_b);
     Module._free(ptr_out_c);
@@ -106,6 +105,7 @@ CryptoModule().then(function(Module) {
     let ptr_key = Module._malloc(32);
     let heap_key = new Uint8Array(Module.HEAPU8.buffer, ptr_key, 32);
     heap_key.set(fromHexString("002a54c05d802210d63d0a1f9fd04eb9520e65d5db4eaabd8fcb47ddd144afe7"));
+
     let ptr_nonce = Module._malloc(32);
     let heap_nonce = new Uint8Array(Module.HEAPU8.buffer, ptr_nonce, 32);
     heap_nonce.set(fromHexString("e156ce9e8f365515e436137e52bd6d4d62212688b24afc223bf6b61a4106412a"));
@@ -117,8 +117,8 @@ CryptoModule().then(function(Module) {
 
     console.log('heap_key');
     console.log(bufferToHex(heap_key));
-    console.time('dleag_prove');
 
+    console.time('dleag_prove');
     rv = instance.dleag_prove(heap_dleag.byteOffset, heap_key.byteOffset, heap_nonce.byteOffset, 252);
     console.timeEnd('dleag_prove');
     console.log(rv);
@@ -140,7 +140,7 @@ CryptoModule().then(function(Module) {
     let ptr_test_ed_pk = Module._malloc(32);
     let heap_test_ed_pk = new Uint8Array(Module.HEAPU8.buffer, ptr_test_ed_pk, 32);
 
-    for (var i = 0; i < 32; i++) {
+    for (let i = 0; i < 32; i++) {
         heap_test_ed_vk[i] = heap_key[31-i];
     }
     console.log('heap_test_ed_vk');
@@ -152,12 +152,28 @@ CryptoModule().then(function(Module) {
 
     ed25519_pk_from_dleag = heap_dleag.slice(33, 33 + 32);
     console.log(toHexString(ed25519_pk_from_dleag));
-    for (var i = 0; i < 32; i++) {
+    for (let i = 0; i < 32; i++) {
         if (heap_test_ed_pk[i] != ed25519_pk_from_dleag[i]) {
             console.log('ERROR: Incorrect result');
             return;
         }
     }
+
+
+    let ptr_test_sc_pk = Module._malloc(33);
+    let heap_test_sc_pk = new Uint8Array(Module.HEAPU8.buffer, ptr_test_sc_pk, 33);
+
+    console.log('GetPubKey(heap_key)');
+    rv = instance.GetPubKey(heap_test_sc_pk.byteOffset, heap_key.byteOffset);
+    console.log(rv);
+    console.log(bufferToHex(heap_test_sc_pk));
+    for (let i = 0; i < 33; i++) {
+        if (heap_test_sc_pk[i] != heap_dleag[i]) {
+            console.log('ERROR: Incorrect result');
+            return;
+        }
+    }
+
 
     console.time('dleag_prove_le');
     rv = instance.dleag_prove_le(heap_dleag2.byteOffset, heap_test_ed_vk.byteOffset, heap_nonce.byteOffset, 252);
@@ -171,13 +187,103 @@ CryptoModule().then(function(Module) {
         }
     }
 
+    let ptr_key2 = Module._malloc(32);
+    let heap_key2 = new Uint8Array(Module.HEAPU8.buffer, ptr_key2, 32);
+    let ptr_test_sc_pk2 = Module._malloc(33);
+    let heap_test_sc_pk2 = new Uint8Array(Module.HEAPU8.buffer, ptr_test_sc_pk2, 33);
+    heap_key2.set(fromHexString("003b65d16e913321e74e1b20a0e15fca631f76e6ec5fbbce90bc58eee255b0f8"));
+
+    console.log('GetPubKey(heap_key2)');
+    rv = instance.GetPubKey(heap_test_sc_pk2.byteOffset, heap_key2.byteOffset);
+    console.log(rv);
+    console.log(bufferToHex(heap_test_sc_pk2));
+
+    console.log('heap_key2');
+    console.log(bufferToHex(heap_key2));
+
+    console.log('GetPubKey(heap_key2)');
+    rv = instance.GetPubKey(heap_test_sc_pk.byteOffset, heap_key.byteOffset);
+    console.log(rv);
+    console.log(bufferToHex(heap_test_sc_pk));
+
+    let ptr_ct = Module._malloc(196);
+    let heap_ct = new Uint8Array(Module.HEAPU8.buffer, ptr_ct, 196);
+
+    console.time('ecdsaotves_enc_sign');
+    rv = instance.ecdsaotves_enc_sign(heap_ct.byteOffset, heap_key.byteOffset, heap_test_sc_pk2.byteOffset, dataHeap.byteOffset);
+    console.log(rv);
+    console.log(toHexString(heap_ct));
+    console.timeEnd('ecdsaotves_enc_sign');
+    if (rv != 1) {
+        console.log('ERROR: Incorrect result');
+        return;
+    }
+
+    console.time('ecdsaotves_enc_verify');
+    rv = instance.ecdsaotves_enc_verify(heap_test_sc_pk.byteOffset, heap_test_sc_pk2.byteOffset, dataHeap.byteOffset, heap_ct.byteOffset);
+    console.log(rv);
+    console.timeEnd('ecdsaotves_enc_verify');
+    if (rv != 1) {
+        console.log('ERROR: Incorrect result');
+        return;
+    }
+
+    let ptr_size = Module._malloc(8);
+    let heap_size = new Uint8Array(Module.HEAPU8.buffer, ptr_size, 8);
+    for (let i = 0; i < 8; i++) {
+        heap_size[i] = 0;
+    }
+    heap_size[0] = 200;
+
+    let ptr_sig = Module._malloc(200);
+    let heap_sig = new Uint8Array(Module.HEAPU8.buffer, ptr_sig, 200);
+
+    console.time('ecdsaotves_dec_sig');
+    rv = instance.ecdsaotves_dec_sig(heap_sig.byteOffset, heap_size.byteOffset, heap_key2.byteOffset, heap_ct.byteOffset);
+    console.log(rv);
+    console.log('size_out ' + heap_size[0]);
+    console.log('heap_sig ' + toHexString(heap_sig));
+    //console.log('heap_size ' + toHexString(heap_size));
+    console.timeEnd('ecdsaotves_dec_sig');
+    if (rv != 1) {
+        console.log('ERROR: Incorrect result');
+        return;
+    }
+
+    let ptr_rec = Module._malloc(32);
+    let heap_rec = new Uint8Array(Module.HEAPU8.buffer, ptr_rec, 32);
+
+    console.time('ecdsaotves_rec_enc_key');
+    rv = instance.ecdsaotves_rec_enc_key(heap_rec.byteOffset, heap_test_sc_pk2.byteOffset, heap_ct.byteOffset, heap_sig.byteOffset, heap_size[0]);
+    console.log(rv);
+    console.log('heap_rec ' + toHexString(heap_rec));
+    console.timeEnd('ecdsaotves_rec_enc_key');
+    if (rv != 1) {
+        console.log('ERROR: Incorrect result');
+        return;
+    }
+    for (let i = 0; i < 32; i++) {
+        if (heap_rec[i] != heap_key2[i]) {
+            console.log('ERROR: Incorrect result');
+            return;
+        }
+    }
+
     Module._free(ptr_test_ed_vk);
     Module._free(ptr_test_ed_pk);
+    Module._free(ptr_test_sc_pk);
+    Module._free(ptr_test_sc_pk2)
 
+    Module._free(ptr_k);
     Module._free(ptr_key);
+    Module._free(ptr_key2);
     Module._free(ptr_nonce);
     Module._free(ptr_dleag);
     Module._free(ptr_dleag2);
+    Module._free(ptr_ct);
+    Module._free(ptr_size);
+    Module._free(ptr_sig);
+    Module._free(ptr_rec);
 
 
     instance.finalise();
